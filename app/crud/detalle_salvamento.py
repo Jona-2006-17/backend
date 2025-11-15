@@ -222,3 +222,23 @@ def delete_all_detalle_salvamento_by_id_venta(db: Session, id_venta: int) -> Opt
         db.rollback()
         logger.error(f"Error al eliminar detalles de venta {id_venta}: {e}")
         raise Exception(f"Error de base de datos al eliminar el detalle de la venta")
+    
+def get_all_products_salvamento(db: Session):
+    try:
+        # Obtener los detalles de la venta
+        data = text("""
+            SELECT 
+                salvamento.id_salvamento,
+                tipo_gallinas.raza,
+                tipo_gallinas.descripcion
+            FROM salvamento
+            INNER JOIN tipo_gallinas ON salvamento.id_tipo_gallina = tipo_gallinas.id_tipo_gallinas 
+        """)
+        result = db.execute(data).mappings().all()
+
+        # *No commit aquí*. La función solo realiza las acciones SQL, y la transacción se maneja en la función llamadora.
+        return result
+
+    except SQLAlchemyError as e:
+        logger.error(f"error al obtener productos")
+        raise Exception("Error de base datos al obtener productos")

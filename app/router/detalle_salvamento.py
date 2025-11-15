@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.crud.permisos import verify_permissions
 from app.router.dependencies import get_current_user
 from core.database import get_db
-from app.schemas.detalle_salvamento import CreateDetalleSalvamento, DetalleSalvamentoOut, DetalleSalvamentoUpdate
+from app.schemas.detalle_salvamento import CreateDetalleSalvamento, DetalleSalvamentoOut, DetalleSalvamentoUpdate, salvamentoProductosOut
 from app.schemas.users import UserOut
 from app.crud import detalle_salvamento as crud_detalle_salvamento
 from sqlalchemy.exc import SQLAlchemyError
@@ -139,3 +139,16 @@ def delete_detalle_salvamento(
         
 #     except SQLAlchemyError as e:
 #         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/all-products-salvamento", response_model=list[salvamentoProductosOut])
+def get_detalle_huevos(
+    db: Session = Depends(get_db),
+    user_token: UserOut = Depends(get_current_user)
+):
+    try:
+        detalle_huevos = crud_detalle_salvamento.get_all_products_salvamento(db)
+        if not detalle_huevos:
+            raise HTTPException(status_code=404, detail="Productos de salvamento no encontrado")
+        return detalle_huevos
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))

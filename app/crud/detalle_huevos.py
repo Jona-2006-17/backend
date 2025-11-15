@@ -199,5 +199,32 @@ def delete_all_detalle_huevos_by_id_venta(db: Session, id_venta: int):
     except SQLAlchemyError as e:
         logger.error(f"Error al eliminar detalles de venta con id_venta {id_venta}: {e}")
         raise Exception("Error al eliminar los detalles de venta")
+    
+
+def get_all_products_stock(db: Session):
+    try:
+        # Obtener los detalles de la venta
+        data = text("""
+            SELECT 
+                stock.id_producto,
+                tipo_huevos.color,
+                tipo_huevos.tamaño AS tamanio
+            FROM 
+                stock
+            INNER JOIN 
+                produccion_huevos ON stock.id_produccion = produccion_huevos.id_produccion
+            INNER JOIN 
+                tipo_huevos ON produccion_huevos.id_tipo_huevo = tipo_huevos.id_tipo_huevo 
+        """)
+        result = db.execute(data).mappings().all()
+
+        # *No commit aquí*. La función solo realiza las acciones SQL, y la transacción se maneja en la función llamadora.
+        return result
+
+    except SQLAlchemyError as e:
+        logger.error(f"error al obtener productos")
+        raise Exception("Error de base datos al obtener productos")
+
+
 
 

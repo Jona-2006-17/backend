@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.crud.permisos import verify_permissions
 from app.router.dependencies import get_current_user
 from core.database import get_db
-from app.schemas.detalle_huevos import DetalleHuevosCreate, DetalleHuevosOut, DetalleHuevosUpdate
+from app.schemas.detalle_huevos import DetalleHuevosCreate, DetalleHuevosOut, DetalleHuevosUpdate, StockProductosOut
 from app.crud import detalle_huevos as crud_detalles_huevos
 
 
@@ -66,6 +66,19 @@ def get_detalle_huevos(
             raise HTTPException(status_code=401, detail="usuario no autorizado")
 
         detalle_huevos = crud_detalles_huevos.get_detalle_huevos_by_id_venta(db, id_venta)
+        if not detalle_huevos:
+            raise HTTPException(status_code=404, detail="Detalle de huevos no encontrado")
+        return detalle_huevos
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/all-products-stock", response_model=list[StockProductosOut])
+def get_detalle_huevos(
+    db: Session = Depends(get_db),
+    user_token: UserOut = Depends(get_current_user)
+):
+    try:
+        detalle_huevos = crud_detalles_huevos.get_all_products_stock(db)
         if not detalle_huevos:
             raise HTTPException(status_code=404, detail="Detalle de huevos no encontrado")
         return detalle_huevos

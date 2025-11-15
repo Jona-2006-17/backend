@@ -23,3 +23,8 @@ class DetalleHuevosUpdate(BaseModel):
 class DetalleHuevosOut(DetalleHuevosBase):
     id_detalle: int
 
+class StockProductosOut(BaseModel):
+    id_producto: int
+    color: str
+    tamanio: str
+
