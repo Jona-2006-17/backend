@@ -35,6 +35,11 @@ class ventaPag(BaseModel):
     total_pages: int
     ventas: List[VentaOut]
 
-class DetalleVentaOut(BaseModel):
-    detalle_huevos: list[DetalleHuevosOut]
-    detalle_salvamento: list[DetalleHuevosOut]
+class DetalleVenta(BaseModel):
+    tipo: str
+    id_detalle: int
+    id_producto: int
+    cantidad: int
+    id_venta: int
+    valor_descuento: Decimal
+    precio_venta: Decimal

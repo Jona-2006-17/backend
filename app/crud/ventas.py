@@ -430,3 +430,22 @@ def cambiar_venta_estado(db: Session, id_venta: int, nuevo_estado: bool) -> bool
         logger.error(f"Error al cambiar el estado de la venta {id_venta}: {e}")
         raise
     
+def get_all_detalle_by_id_venta(db: Session, venta_id: int):
+    try:
+        sentencia = text("""
+            SELECT 'huevos' AS tipo, id_detalle, id_producto, cantidad, id_venta, valor_descuento, precio_venta
+            FROM detalle_huevos
+            WHERE id_venta = :venta_id
+
+            UNION ALL
+
+            SELECT 'salvamento' AS tipo, id_detalle, id_producto, cantidad, id_venta, valor_descuento, precio_venta
+            FROM detalle_salvamento
+            WHERE id_venta = :venta_id;                      
+        """)
+    
+        result = db.execute(sentencia, {"venta_id": venta_id}).mappings().all()
+        return result
+    except SQLAlchemyError as e:
+        logger.error(f"Error al obtener detalles de la venta: {e}")
+        raise Exception("Error de base de datos al obtener detalles de la venta")
