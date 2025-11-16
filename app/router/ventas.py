@@ -4,9 +4,12 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from app.router.dependencies import get_current_user
 from app.crud.permisos import verify_permissions
-from app.schemas.ventas import VentaCreate, VentaOut, VentaUpdate, ventaPag
+from app.schemas.ventas import VentaCreate, VentaOut, VentaUpdate, ventaPag, DetalleVentaOut
 from app.schemas.users import UserOut
 from app.crud import ventas as crud_ventas
+from app.crud import detalle_huevos as crud_detalle_huevos
+from app.crud import detalle_salvamento as crud_detalle_salvamento
+
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from datetime import date
 
@@ -175,6 +178,8 @@ def get_venta_by_id(
         return venta
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
     
     
 @router.put("/by-id/{venta_id}")
@@ -223,3 +228,28 @@ def cambiar_venta_estado(
 
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail="Error de base de datos al cambiar el estado de la venta")
+    
+
+@router.get("/detalles-by-id", response_model=DetalleVentaOut)
+def get_venta_by_id(    
+    venta_id: int,
+    db: Session = Depends(get_db),
+    user_token: UserOut = Depends(get_current_user) ):
+    try:
+        id_rol = user_token.id_rol
+
+        if not verify_permissions(db, id_rol, modulo, 'seleccionar'):
+            raise HTTPException(status_code=401, detail= 'Usuario no autorizado')
+        
+        detalle_h = crud_detalle_huevos.get_detalle_huevos_by_id_venta(db, venta_id)
+        detalle_s = crud_detalle_salvamento.get_detalle_by_id_venta(db, venta_id)
+
+        if not detalle_h and not detalle_s:
+            raise HTTPException(status_code=404, detail="Detalles no encontrados")
+        
+        return {
+            "detalle_huevos": detalle_h,
+            "detalle_salvamento": detalle_s
+        }
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))

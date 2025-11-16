@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 from decimal import Decimal
+from app.schemas.detalle_huevos import DetalleHuevosOut
 
 class VentaBase(BaseModel):
     # id_usuario = id de quien registra la venta
@@ -33,3 +34,7 @@ class ventaPag(BaseModel):
     total_ventas: int
     total_pages: int
     ventas: List[VentaOut]
+
+class DetalleVentaOut(BaseModel):
+    detalle_huevos: list[DetalleHuevosOut]
+    detalle_salvamento: list[DetalleHuevosOut]

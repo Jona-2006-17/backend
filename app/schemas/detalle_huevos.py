@@ -28,3 +28,4 @@ class StockProductosOut(BaseModel):
     color: str
     tamanio: str
 
+
