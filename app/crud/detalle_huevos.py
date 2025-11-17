@@ -124,7 +124,19 @@ def update_detalle_huevos_by_id(db: Session, detalle_id: int, detalle_h: Detalle
         logger.error(f"Error al actualizar detalle_huevos {detalle_id}: {e}")
         print("Error al actualizar detalle_huevos:", e)
         raise 
-    
+
+def get_detalle_huevos_by_id(db: Session, id_detalle: int):
+    try:
+        query = text("""SELECT id_detalle, id_producto, cantidad, id_venta, 
+                        valor_descuento, precio_venta
+                    FROM detalle_huevos
+                    WHERE id_detalle = :id_detalle
+                """)
+        result = db.execute(query, {"id_detalle": id_detalle}).mappings().first()
+        return result
+    except SQLAlchemyError as e:  
+        logger.error(f"Error de BD al obtener detalle {e}")
+        raise Exception("Error de base de datos al obtener el detalle") 
 
 def get_detalle_huevos_by_id_venta(db:Session, id:int):
     try:

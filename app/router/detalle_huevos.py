@@ -71,6 +71,25 @@ def get_detalle_huevos(
         return detalle_huevos
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/by-id_detalle", response_model=DetalleHuevosOut)
+def get_detalle_huevos(
+    id_detalle: int,
+    db: Session = Depends(get_db),
+    user_token: UserOut = Depends(get_current_user)
+):
+    try:
+        id_rol = user_token.id_rol   
+        modulo = 7  
+        if not verify_permissions(db, id_rol, modulo, 'seleccionar'):
+            raise HTTPException(status_code=401, detail="Usuario no autorizado para ver detalle salvamento")
+
+        detalle_huevos = crud_detalles_huevos.get_detalle_huevos_by_id(db, id_detalle)
+        if not detalle_huevos:
+            raise HTTPException(status_code=404, detail="Detalle huevos no encontrado")
+        return detalle_huevos
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
     
 @router.get("/all-products-stock", response_model=list[StockProductosOut])
 def get_detalle_huevos(
