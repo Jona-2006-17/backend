@@ -25,6 +25,7 @@ class DetalleHuevosOut(DetalleHuevosBase):
 
 class StockProductosOut(BaseModel):
     id_producto: int
+    unidad_medida: str
     color: str
     tamanio: str
 

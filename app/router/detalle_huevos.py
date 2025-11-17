@@ -26,8 +26,8 @@ def create_detalle_huevos(
         if not verify_permissions(db, id_rol, modulo, 'insertar'):
             raise HTTPException(status_code=401, detail="usuario no autorizado")
 
-        crud_detalles_huevos.create_detalle_huevos(db, detalle_huevos)
-        return {"message": "Detalle de huevos creado correctamente"}
+        nuevo_detalle = crud_detalles_huevos.create_detalle_huevos(db, detalle_huevos)
+        return nuevo_detalle
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))
     

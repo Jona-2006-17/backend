@@ -9,7 +9,7 @@ from app.schemas.detalle_huevos import DetalleHuevosCreate, DetalleHuevosUpdate
 
 logger = logging.getLogger(__name__)
 
-def create_detalle_huevos(db: Session, detalle_h: DetalleHuevosCreate) -> Optional[bool]:
+def create_detalle_huevos(db: Session, detalle_h: DetalleHuevosCreate) -> dict:
     try:
         stock_disponible = db.execute(text("SELECT cantidad_disponible FROM stock WHERE id_producto = :id_producto"), {"id_producto": detalle_h.id_producto}).mappings().first()
         if not stock_disponible or stock_disponible['cantidad_disponible'] < detalle_h.cantidad:
@@ -25,6 +25,7 @@ def create_detalle_huevos(db: Session, detalle_h: DetalleHuevosCreate) -> Option
             )
         """)
         db.execute(sentencia, detalle_h.model_dump())
+        id_creado = db.execute(text("SELECT LAST_INSERT_ID()")).scalar()
         
         db.execute(text("""
             UPDATE stock
@@ -32,7 +33,7 @@ def create_detalle_huevos(db: Session, detalle_h: DetalleHuevosCreate) -> Option
             WHERE id_producto = :id_producto
         """), {"cantidad": detalle_h.cantidad, "id_producto": detalle_h.id_producto})
         db.commit()
-        return True
+        return {"id_detalle_huevo": id_creado}
     except SQLAlchemyError as e:
         db.rollback()
         logger.error(f"Error al crear detalle_huevos: {e}")
@@ -207,6 +208,7 @@ def get_all_products_stock(db: Session):
         data = text("""
             SELECT 
                 stock.id_producto,
+                stock.unidad_medida,
                 tipo_huevos.color,
                 tipo_huevos.tamaño AS tamanio
             FROM 
