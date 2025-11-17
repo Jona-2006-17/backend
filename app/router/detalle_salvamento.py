@@ -23,8 +23,8 @@ def create_detalle_salvamento(
         if not verify_permissions(db, id_rol, modulo, 'insertar'):
             raise HTTPException(status_code=401, detail="Usuario no autorizado para ingresar detalles salvamento")
         
-        crud_detalle_salvamento.create_detalle_salvamento(db, detalle_salvamento)
-        return {"message": "Detalle Salvamento creado correctamente"}
+        nuevo_detalle = crud_detalle_salvamento.create_detalle_salvamento(db, detalle_salvamento)
+        return nuevo_detalle
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -141,14 +141,14 @@ def delete_detalle_salvamento(
 #         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/all-products-salvamento", response_model=list[salvamentoProductosOut])
-def get_detalle_huevos(
+def get_detalle_salvamento(
     db: Session = Depends(get_db),
     user_token: UserOut = Depends(get_current_user)
 ):
     try:
-        detalle_huevos = crud_detalle_salvamento.get_all_products_salvamento(db)
-        if not detalle_huevos:
+        detalle_salvamento = crud_detalle_salvamento.get_all_products_salvamento(db)
+        if not detalle_salvamento:
             raise HTTPException(status_code=404, detail="Productos de salvamento no encontrado")
-        return detalle_huevos
+        return detalle_salvamento
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))

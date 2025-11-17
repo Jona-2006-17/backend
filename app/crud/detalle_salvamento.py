@@ -10,7 +10,7 @@ from app.schemas.detalle_salvamento import CreateDetalleSalvamento, DetalleSalva
 # app./crud/detalle_salvamento
 logger = logging.getLogger(__name__) # Agarra la ubicación del archivo con el que estamos trabajando
 
-def create_detalle_salvamento(db: Session, detalle_salvamento: CreateDetalleSalvamento) -> Optional[bool]:
+def create_detalle_salvamento(db: Session, detalle_salvamento: CreateDetalleSalvamento) -> dict:
     try:
         # Verificar cantidad disponible
         salvamento_query = db.execute(text("SELECT cantidad_gallinas FROM salvamento WHERE id_salvamento = :id_producto"),
@@ -29,6 +29,8 @@ def create_detalle_salvamento(db: Session, detalle_salvamento: CreateDetalleSalv
             )
         """)
         db.execute(sentencia, detalle_salvamento.model_dump())
+        id_creado = db.execute(text("SELECT LAST_INSERT_ID()")).scalar()
+
         
         # Actualizar cantidad
         db.execute(text("""
@@ -38,7 +40,7 @@ def create_detalle_salvamento(db: Session, detalle_salvamento: CreateDetalleSalv
         """), {"cantidad": detalle_salvamento.cantidad, "id_producto": detalle_salvamento.id_producto})
 
         db.commit() # Guardar cambios permanentemente
-        return True
+        return {"id_detalle_salvamento": id_creado}
     except SQLAlchemyError as e:
         db.rollback() 
         logger.error(f"Error al crear detalle salvamento: {e}")
