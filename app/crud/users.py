@@ -195,7 +195,7 @@ def get_all_user_except_admins_pag(db: Session, skip: int = 0, limit:int = 10):
 
         #2 contar usuarios paginados
         data_query = text("""
-            SELECT id_usuario, nombre, documento, usuarios.id_rol, email, telefono, estado, nombre_rol 
+            SELECT id_usuario, nombre, documento, usuarios.id_rol, email, telefono, usuarios.estado, nombre_rol 
             FROM usuarios 
             JOIN roles ON usuarios.id_rol = roles.id_rol
             WHERE usuarios.id_rol NOT IN (1, 2)
