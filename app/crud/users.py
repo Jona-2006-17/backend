@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from typing import Optional
@@ -10,7 +11,10 @@ logger = logging.getLogger(__name__)
 
 def create_user(db: Session, user: UserCreate) -> Optional[bool]:
     try:
+        
+        print(user.pass_hash)
         pass_encript = get_hashed_password(user.pass_hash)
+        print(pass_encript)
         user.pass_hash = pass_encript
         sentencia = text("""
             INSERT INTO usuarios (
@@ -29,7 +33,22 @@ def create_user(db: Session, user: UserCreate) -> Optional[bool]:
     except SQLAlchemyError as e:
         db.rollback()
         logger.error(f"Error al crear usuario: {e}")
-        raise Exception("Error de base de datos al crear el usuario")
+        error_msg = str(e.__cause__)
+        if "Duplicate entry" in error_msg and "email" in error_msg:
+            raise HTTPException(
+                status_code=400,
+                detail="El correo ya está registrado."
+            )
+        if "Duplicate entry" in error_msg and "documento" in error_msg:
+            raise HTTPException(
+                status_code=400,
+                detail="El número de documento ya existe."
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Error interno al crear el usuario."
+        )
 
 def get_user_by_email_for_login(db: Session, email: str):
     try:
@@ -101,7 +120,23 @@ def update_user_by_id(db: Session, user_id: int, user: UserUpdate) -> Optional[b
     except SQLAlchemyError as e:
         db.rollback()
         logger.error(f"Error al actualizar usuario {user_id}: {e}")
-        raise Exception("Error de base de datos al actualizar el usuario")
+        error_msg = str(e.__cause__)
+        if "Duplicate entry" in error_msg and "email" in error_msg:
+            raise HTTPException(
+                status_code=400,
+                detail="El correo ya está registrado."
+            )
+        if "Duplicate entry" in error_msg and "documento" in error_msg:
+            raise HTTPException(
+                status_code=400,
+                detail="El número de documento ya existe."
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Error interno al actualizar el usuario."
+        )
+        # raise Exception("Error de base de datos al actualizar el usuario")
 
 
 def update_user(db: Session, user_id: int, user_update: UserUpdate) -> bool:
